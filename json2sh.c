@@ -318,7 +318,7 @@ hexget(int bits, unsigned val)
   else if (c>='a' && c<='f')
     c -= 'a'-10;
   else if (c>='A' && c<='F')
-    c -= 'A'+10;
+    c -= 'A'-10;
   else
     OOPSc(c, "hex digit expected");
   return val | (c<<bits);
