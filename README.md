@@ -49,11 +49,26 @@ For the variable names:
 
 WTF?
 
-- Yes, it works, indeed
+- Yes, it works, indeed.
 
 Really?
 
 - Sure!
+
+What is it able to process?
+
+- http://www.json.org/
+- `true` becomes `$JSON_true_`
+- `false` becomes `$JSON_false_`
+- `null` becomes `$JSON_null_`
+- Empty array becomes `$JSON_empty_`
+- Empty object becomes `$JSON_nothing_`
+
+Return codes?
+
+- 0 if JSON parses OK
+- 23 if something fails (OOPS)
+- 42 for usage
 
 Contact/Bugs?
 
