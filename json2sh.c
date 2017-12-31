@@ -688,7 +688,7 @@ base_add(BASE b, int ch)
       default: outc('\''); return;
       }
   if (b->value<2 && b->pos < 255)
-    if ((b->value==0 && simple_value(ch)) || (b->value=1, ch>=32 && ch<=255 && ch!='\''))
+    if ((b->value==0 && simple_value(ch)) || (b->value=1, ch>=32 && ch<=255 && ch!='\'' && ch!=127))
       {
 	base_put(b, ch);
 	return;
