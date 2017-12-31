@@ -31,8 +31,8 @@
  *
  * Examples:
  *
- * '{ "\r": { "\b":1 }}' becomes "JSON__r0b_=1"
- * '[ true, false, null ]' becomes 'JSON__1_=$JSON_true_;JSON__2_=$JSON_false_;JSON__3_=$JSON_null_'
+ * '{ "\r": { "\b":1 }}' becomes "JSON__0r0b_=1"
+ * '[ true, false, null ]' becomes 'JSON__1_=$JSON_true_' 'JSON__2_=$JSON_false_' 'JSON__3_=$JSON_null_'
  * '[]' becomes 'JSON_=$JSON_empty_'
  * '{}' becomes 'JSON_=$JSON_nothing_'
  *
@@ -810,7 +810,7 @@ j_object(BASE p)
       D(" here1");
     }
   if (!base_done(b))
-    base_out(b, "$JSON_nothing");
+    base_out(b, "$JSON_nothing_");
 }
 
 static void
