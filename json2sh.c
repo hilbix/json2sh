@@ -1,11 +1,13 @@
 /* This is a JSON to SHell transcoder.
  *
+ * This Works is placed under the terms of the Copyright Less License,
+ * see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
+ *
  * It has following properties:
  *
  * - Is able to process very big JSON files, as only a single value needs to fit into memory.
  * - Does everything, such that shells can parse things easily.
  * - Is friendly to "read -r"-loops (1 line = 1 value)
- * - Can augment the output with structural information.
  * - Output can be processed by "source" as variables or function calls.
  *
  * Input and output are assumed to be UTF-8.
@@ -52,6 +54,7 @@
 
 static int	line;
 static int	column;
+static const char *SEP;
 
 #if 0
 #define	D(...)	debug_printf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
@@ -540,7 +543,7 @@ base_fin(BASE b)
 {
   base_esc_end(b);
   if (!b->done)
-    out("=");
+    out(SEP);
   b->done	= 1;
 }
 
@@ -881,9 +884,13 @@ main(int argc, char **argv)
 {
   BASE	b = base_new(NULL, B_PREFIX);
 
-  if (argc>2)
-    OOPS("there are no commandline options yet");
+  if (argc>3 || (argc>1 && argv[1][0]=='-'))
+    {
+      fprintf(stderr, "Usage: %s [PREFIX [SEP]]\n\tdefault: PREFIX 'JSON_' SEP '='\n", NAME);
+      return 42;
+    }
   base_set(b, argv[1] ? argv[1] : "JSON_");
+  SEP	= argc>2 ? argv[2] : "=";
   j_value(b);
   if (peek()!=EOF)
     OOPS("end of input expected");
