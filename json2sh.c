@@ -896,5 +896,6 @@ main(int argc, char **argv)
     OOPS("end of input expected");
   if (base_done(b))
     nl();
+  return 0;
 }
 
