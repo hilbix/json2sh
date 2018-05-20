@@ -18,3 +18,10 @@ install:	$(BINS)
 clean:
 	rm -f $(BINS)
 
+.PHONY:	deb
+deb:
+	ok="`git status --porcelain`" && [ -z "$$ok" ]
+	gbp buildpackage
+	mv debian/*.debhelper.log debian/*.substvars ..
+	git clean -f -d
+
