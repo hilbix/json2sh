@@ -170,15 +170,15 @@ oute(int ch)
   else
     {
       if (ch<65536)
-	outc('u');
+        outc('u');
       else
-	{
-	  outc('U');
-	  outx(ch>>28);
-	  outx(ch>>24);
-	  outx(ch>>20);
-	  outx(ch>>16);
-	}
+        {
+          outc('U');
+          outx(ch>>28);
+          outx(ch>>24);
+          outx(ch>>20);
+          outx(ch>>16);
+        }
       outx(ch>>12);
       outx(ch>>8);
     }
@@ -639,12 +639,12 @@ base_escape(BASE b, int ch)
     case '_':
       /* perhaps delay a bit, to see if we enter or leave ->esc	*/
       if (b->esc)
-	base_esc(b, 'c', 3);
+        base_esc(b, 'c', 3);
       else
-	{
-	  base_esc(b, ch, 0);
-	  base_esc(b, ch, 0);
-	}
+        {
+          base_esc(b, ch, 0);
+          base_esc(b, ch, 0);
+        }
       return;
 
     case '\a':	base_esc(b, 'a', 3);	return;
@@ -690,8 +690,8 @@ base_add(BASE b, int ch)
   if (b->value<2 && b->pos < 255)
     if ((b->value==0 && simple_value(ch)) || (b->value=1, ch>=32 && ch<=255 && ch!='\'' && ch!=127))
       {
-	base_put(b, ch);
-	return;
+        base_put(b, ch);
+        return;
       }
   if (b->value < 3)
     {
