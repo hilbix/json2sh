@@ -12,7 +12,7 @@ love all:	$(BINS)
 
 .PHONY:	install
 install:	$(BINS)
-	install -C $(BINS) /usr/local/bin
+	install -DCt $(DESTDIR)/usr/bin/ $(BINS)
 
 .PHONY:	clean
 clean:
