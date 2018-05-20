@@ -34,7 +34,7 @@
  * '{ "\r": { "\b":1 }}' becomes "JSON__0r0b_=1"
  * '[ true, false, null ]' becomes 'JSON__1_=$JSON_true_' 'JSON__2_=$JSON_false_' 'JSON__3_=$JSON_null_'
  * '[]' becomes 'JSON_=$JSON_empty_'
- * '{}' becomes 'JSON_=$JSON_nothing_'
+ * '{}' becomes 'JSON__0_=$JSON_nothing_'
  *
  * Simple strings are output as is.
  * Complex strings are quoted with ''.
