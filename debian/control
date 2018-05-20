@@ -1,0 +1,15 @@
+Source: json2sh
+Section: misc
+Priority: optional
+Maintainer: Valentin Hilbig <webmaster@scylla-charybdis.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/hilbix/json2sh
+Vcs-Git: ssh://git@github.com:hilbix/json2sh.git
+Vcs-Browser: https://github.com/hilbix/json2sh
+
+Package: json2sh
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Convert JSON into bash compatible output
+ Access JSON content from shell scripts
