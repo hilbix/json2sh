@@ -21,7 +21,12 @@ clean:
 .PHONY:	deb
 deb:
 	ok="`git status --porcelain`" && [ -z "$$ok" ]
-	gbp buildpackage
+	gbp buildpackage --git-tag --git-retag
 	mv debian/*.debhelper.log debian/*.substvars ..
 	git clean -f -d
+
+.PHONY:	dch
+dch:
+	ok="`git status --porcelain`" && [ -z "$$ok" ]
+	gbp dch --commit --spawn-editor=always --distribution=unstable
 
