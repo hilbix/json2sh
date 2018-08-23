@@ -54,7 +54,7 @@
 
 static int	line;
 static int	column;
-static const char *SEP;
+static struct _buf *PREF, *SEP, *LF;
 
 #if 0
 #define	D(...)	debug_printf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
@@ -122,16 +122,20 @@ outn(const char *s, size_t len)
   fwrite(s, len, 1, stdout);
 }
 
+#if 0
 static void
 out(const char *s)
 {
   outn(s, strlen(s));
 }
+#endif
+
+static void outb(struct _buf *b);
 
 static void
 nl(void)
 {
-  outn("\n", 1);
+  outb(LF);
 }
 
 static void
@@ -186,11 +190,117 @@ oute(int ch)
    outx(ch);
 }
 
+static int
+unhex(char c)
+{
+  if (c>='0' && c<='9')
+    return c-'0';
+  if (c>='a' && c<='f')
+    return c-'a'+10;
+  if (c>='A' && c<='F')
+    return c-'A'+10;
+  return -1;
+}
+
+static int
+unoct(char c)
+{
+  if (c>='0' && c<='7')
+    return c-'0';
+  return -1;
+}
+
+/* This is a general unescape.
+ * Something in between echo -e, bash printf '%b', C and my ideas
+ * Specials:
+ * 	\i ignored, so it produces no outpup
+ * 	\c end of input, like in `echo -e 'printed\\cignored'
+ * REST	\CREST just copy REST uninterpreted.
+ * ?	\? if \? is no valid escape, for example \' \" \\
+ * c	\? where \? is the C-escape for c
+ * DEL	\d
+ * ESC	\e or \E
+ * NUL	\o or \O
+ * c	\0ooo where o is 0-7 and ooo is the octal representation of c
+ * c	\Ooo where O is 1-7 and o is 0-7 and Ooo is the octal representation of c
+ * c	\xHH where H is 0-9a-f and HH is the hex representation of c
+ * No, this does not support unicode yet.
+ */
+static size_t
+unescape(char *dest, const char *s, size_t len, char esc)
+{
+  size_t	pos, out;
+  char		c;
+  int		tmp;
+
+  for (out=0, pos=0; pos<len; )
+    {
+      if ((c = s[pos++])==esc && pos<len)
+        switch (c=s[pos++])
+          {
+          case 'i':	continue;			/* ignore	*/
+
+          case 'C':					/* copy unchanged	*/
+            while (pos<len)
+              dest[out++] = s[pos++];
+          case 'c':	return out;			/* end of string (see 'echo')	*/
+
+          default:	break;				/* dequote anything else	*/
+
+          case 'a':	c='\a'; break;
+          case 'b':	c='\b'; break;
+          case 'd':	c='\177'; break;		/* DEL, my special	*/
+          case 'E':
+          case 'e':	c='\033'; break;		/* ESC	*/
+          case 'f':	c='\f'; break;
+          case 'n':	c='\n'; break;
+          case 'r':	c='\r'; break;
+          case 't':	c='\t'; break;
+          case 'v':	c='\v'; break;
+          case 'o':	c=0; break;
+          case 'O':	c=0; break;
+
+          case 'x':					/* HEX	*/
+            if (pos>=len || (tmp=unhex(s[pos]))<0) break;
+            c	= tmp;
+            if (++pos>=len || (tmp=unhex(s[pos]))<0) break;
+            c	= (c<<4) | tmp;
+            pos++;
+            break;
+
+          case '0': case '1': case '2': case '3':	/* OCT	*/
+          case '4': case '5': case '6': case '7':
+            c = unoct(c);
+            if (pos>=len || (tmp=unoct(s[pos]))<0) break;
+            c	= (c<<3) | tmp;
+            if (++pos>=len || c>=(256>>3) || (tmp=unoct(s[pos]))<0) break;
+            c	= (c<<3) | tmp;
+            if (++pos>=len || c>=(256>>3) || (tmp=unoct(s[pos]))<0) break;
+            c	= (c<<3) | tmp;
+            pos++;
+            break;
+          }
+      dest[out++]	= c;
+    }
+  return out;
+}
 
 
 /**********************************************************************
  * MISC
  *********************************************************************/
+
+struct _buf
+  {
+    const char	*buf;
+    size_t	len;
+  };
+
+static void
+outb(struct _buf *b)
+{
+  outn(b->buf, b->len);
+}
 
 static void *
 alloc0(size_t len)
@@ -216,6 +326,26 @@ re_alloc(void *buf, size_t len)
   if (!ptr)
     OOPS("out of memory");
   return ptr;
+}
+
+struct _buf *
+buf(const char *s)
+{
+  struct _buf	*b;
+  char		*tmp;
+  size_t	len;
+
+  b		= alloc0(sizeof *b);
+  b->len	= len = strlen(s);
+  b->buf	= tmp = alloc0(b->len+1);
+  memcpy(tmp, s, len);
+
+  /* If buf is surrounded by $'...' do some shell unescape.
+   * Ignore leftover bytes, so do not realloc to shrink ..
+   */
+  if (*s=='\\')
+    b->len	= unescape(tmp, s, len, '\\');
+  return b;
 }
 
 
@@ -543,7 +673,7 @@ base_fin(BASE b)
 {
   base_esc_end(b);
   if (!b->done)
-    out(SEP);
+    outb(SEP);
   b->done	= 1;
 }
 
@@ -581,10 +711,12 @@ base_esc(BASE b, int c, int esc)
 /* literal output (variable name)
  */
 static void
-base_set(BASE b, const char *s)
+base_set(BASE b, struct _buf *buf)
 {
-  while (*s)
-    base_esc(b, *s++, 0);
+  int i;
+
+  for (i=0; i<buf->len; i++)
+    base_esc(b, buf->buf[i], 0);
 }
 
 static BASE
@@ -882,20 +1014,38 @@ j_value(BASE b)
 int
 main(int argc, char **argv)
 {
-  BASE	b = base_new(NULL, B_PREFIX);
+  BASE	b;
 
-  if (argc>3 || (argc>1 && argv[1][0]=='-'))
+  if (argc>4 || (argc>1 && argv[1][0]=='-'))
     {
-      fprintf(stderr, "Usage: %s [PREFIX [SEP]]\n\tdefault: PREFIX 'JSON_' SEP '='\n", NAME);
+      fprintf(stderr, "Usage: %s [PREFIX [SEP [LF]]]\n"
+              "\tConvert any JSON into lines readable by shell.\n"
+              "\tVersion " VERSION " compiled " __DATE__ "\n"
+              "\tdefault: PREFIX='JSON_' SEP='=' LF='\\n'\n"
+              "\tPREFIX/SEP/LF are de-escaped if they start with '\\'.\n"
+              "\t\t\\i to ignore the initial '\\'.\n"
+              "\t\t\\c to ignore the rest of the string.\n"
+              "\t\t\\C to copy the rest of the string as-is.\n"
+              "\tExamples:\n"
+              "\t\tPREFIX from shell as-is: '\\i\\C'\"$PREFIX\"\n"
+              "\t\tUse '\\i'\"ARG\" too, if ARG starts with -\n"
+              "\t\tjson2sh <<< '[ true, false, null, [], {} ]'\n"
+              , NAME);
       return 42;
     }
-  base_set(b, argv[1] ? argv[1] : "JSON_");
-  SEP	= argc>2 ? argv[2] : "=";
+
+  PREF	= buf(argc>1 ? argv[1] : "JSON_");
+  SEP	= buf(argc>2 ? argv[2] : "=");
+  LF	= buf(argc>3 ? argv[3] : "\n");
+
+  b	= base_new(NULL, B_PREFIX);
+  base_set(b, PREF);
   j_value(b);
   if (peek()!=EOF)
     OOPS("end of input expected");
   if (base_done(b))
     nl();
+
   return 0;
 }
 
