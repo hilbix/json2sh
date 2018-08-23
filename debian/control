@@ -1,11 +1,11 @@
 Source: json2sh
-Section: misc
+Section: contrib/utils
 Priority: optional
 Maintainer: Valentin Hilbig <webmaster@scylla-charybdis.com>
 Build-Depends: debhelper (>=9)
-Standards-Version: 3.9.6
+Standards-Version: 3.9.7
 Homepage: https://github.com/hilbix/json2sh
-Vcs-Git: ssh://git@github.com:hilbix/json2sh.git
+Vcs-Git: https://github.com/hilbix/json2sh.git
 Vcs-Browser: https://github.com/hilbix/json2sh
 
 Package: json2sh
