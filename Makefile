@@ -5,7 +5,7 @@
 
 BINS=json2sh
 
-CFLAGS=-Wall -O3
+CFLAGS=-Wall -O3 -DVERSION='"$(shell dpkg-parsechangelog --show-field Version)"'
 
 .PHONY:	love all
 love all:	$(BINS)
