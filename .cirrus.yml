@@ -1,0 +1,6 @@
+container:
+  image: gcc:latest
+
+make_task:
+  compile_script: make
+  install_script: make install
