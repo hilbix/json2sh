@@ -1,5 +1,8 @@
 > This is nearly not tested!
 
+[![json2sh dev Build Status](https://api.cirrus-ci.com/github/hilbix/json2sh.svg?branch=master)](https://cirrus-ci.com/github/hilbix/json2sh/master)
+
+
 # `json2sh` converts JSON into shell compatible output
 
 ## Usage
