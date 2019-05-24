@@ -1,1 +1,6 @@
 /json2sh
+/debian/.debhelper/
+/debian/files
+/debian/json2sh/
+/debian/json2sh.debhelper.log
+/debian/json2sh.substvars
