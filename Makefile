@@ -4,8 +4,9 @@
 # see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
 
 BINS=json2sh
+VERS=VERSION.h
 
-CFLAGS=-Wall -O3 -DVERSION='"$(shell dpkg-parsechangelog --show-field Version)"'
+CFLAGS=-Wall -O3 -DGITCOMMIT='"$(shell git rev-parse --short HEAD)"' -DGITDATE='"$(shell git log -1 --format=%ci --date=iso8601 HEAD)"'
 
 .PHONY:	love all
 love all:	$(BINS)
@@ -14,12 +15,21 @@ love all:	$(BINS)
 install:	$(BINS)
 	install -DCt $(DESTDIR)/usr/bin/ $(BINS)
 
+$(BINS):	$(VERS)
+
+$(VERS):	Makefile debian/changelog
+	echo "#define VERSION \"`dpkg-parsechangelog --show-field Version`\"" >"$@"
+
 .PHONY:	clean
 clean:
 	rm -f $(BINS)
 
+.PHONY:	devclean
+devclean:	clean
+	rm -f $(VERS)
+
 .PHONY:	deb
-deb:
+deb:	$(VERS)
 	ok="`git status --porcelain`" && [ -z "$$ok" ]
 	gbp buildpackage --git-tag --git-retag
 	mv debian/*.debhelper.log debian/*.substvars ..
@@ -29,6 +39,7 @@ deb:
 dch:
 	ok="`git status --porcelain`" && [ -z "$$ok" ]
 	gbp dch --commit --spawn-editor=always --distribution=unstable
+	make $(VERS) && ok="`git status --porcelain`" && [ ". M $(VERS)" = ".$$ok" ] && git commit --amend $(VERS) -C HEAD
 
 # show the manual page
 .PHONY: man

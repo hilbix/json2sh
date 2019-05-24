@@ -51,6 +51,7 @@
 #include <errno.h>
 
 #define	NAME	"json2sh"
+#include "VERSION.h"
 
 static int	line;
 static int	column;
@@ -1019,16 +1020,16 @@ main(int argc, char **argv)
   if (argc>4 || (argc>1 && argv[1][0]=='-'))
     {
       fprintf(stderr, "Usage: %s [PREFIX [SEP [LF]]]\n"
+              "\t\tVersion " VERSION " from " GITDATE " (" GITCOMMIT ")\n"
               "\tConvert any JSON into lines readable by shell.\n"
-              "\tVersion " VERSION " compiled " __DATE__ "\n"
               "\tdefault: PREFIX='JSON_' SEP='=' LF='\\n'\n"
               "\tPREFIX/SEP/LF are de-escaped if they start with '\\'.\n"
               "\t\t\\i to ignore the initial '\\'.\n"
               "\t\t\\c to ignore the rest of the string.\n"
               "\t\t\\C to copy the rest of the string as-is.\n"
               "\tExamples:\n"
-              "\t\tPREFIX from shell as-is: '\\i\\C'\"$PREFIX\"\n"
-              "\t\tUse '\\i'\"ARG\" too, if ARG starts with -\n"
+              "\t\tUse $ARG from env as-is: '\\C'\"$ARG\"\n"
+              "\t\tWrite ARGs like '-\\r\\n' as '\\i''-\\r\\n'\n"
               "\t\tjson2sh <<< '[ true, false, null, [], {} ]'\n"
               , NAME);
       return 42;
