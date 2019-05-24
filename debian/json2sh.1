@@ -2,85 +2,159 @@
 .\" This Works is placed under the terms of the Copyright Less License,
 .\" see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
 .\"
-.TH JSON2SH 1 "May 20 2018"
+.TH JSON2SH 1 "May 25 2019"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
-json2sh \- Convert JSON into bash compatible output
+\fBjson2sh\fP \- Convert JSON into \fBbash\fP compatible output
 .SH SYNOPSIS
 .B json2sh
-.RI [PREFIX\ [SEPARATOR]]
+.RI [PREFIX\ [SEPARATOR\ [LF]]]
 .SH DESCRIPTION
 .nh
-This package allows to access JSON content from shell scripts.
+This package transforms JSON into something readable by shell
+so you can understand JSON from shell scripts.
 .SH OPTIONS
 .nh
-.B json2sh
-has two optional commandline arguments,
-.BI PREFIX
-which defaults to
-.B JSON_
-and
-.BI SEPARATOR
-which defaults to
-.B =
+\fBjson2sh\fP has tree optional commandline arguments:
+.RS
+.TP
+.B PREFIX
+which defaults to '\fBJSON_\fP'
+.TP
+.B SEPARATOR
+which defaults to '\fB=\fP'
+.TP
+.B LF
+which defaults to '\fB\en\fP'
+.RE
+.PP
+\fBPREFIX\fP/\fBSEPARATOR\fP/\fBLF\fP
+are de-escaped if they start with '\e'.
+.RS
+.TP
+.B \ei
+to ignore the initial '\e'.
+.TP
+.B \ec
+to ignore the rest of the string.
+.TP
+.B \eC
+to copy the rest of the string as-is.
+.RE
+.PP
+So if you want to programmatically give something to
+\fBjson2sh\fP you can just prefix it by \fB'\eC'\fP like
+.RS
+json2sh \fB'\eC'\fP$'JSON_' \fB'\eC'\fP$'=' \fB'\eC'\fP$'\en'
 .SH EXAMPLES
 .nh
-.B . <(json2sh <<<'{"w":"t","f":[6]}')
-.RS 8
+.B . <(json2sh <<<'{"w":"t","f":[6,42]}')
+.RS
 This reads the JSON definition into shell variables starting with
-\fBJSON__\fR.  This sources following lines (which is the output
-of \fBjson2sh\fR):
-.RS 8
+\fBJSON__\fP.  This sources following lines (which is the output
+of \fBjson2sh\fP):
+.RS
+.nf
 JSON__0_w=t
-.br
 JSON__0_f_1_=6
+JSON__0_f_2_=42
+.fi
 .RE
 where
-.RS 8
-.HP 8
-\fBJSON_\fR is the prefix, just copied literally,
-.HP 8
-\fB_\fR is the start of escapes,
-.HP 8
-\fB0\fR is the escaped dot (which means, it is an "unnamed" object),
-.HP 8
-\fB_\fR is the end of escapes,
-.HP 8
-\fBw\fR is the first key \fBw\fR,
-.HP 8
-\fB=\fR is the \fBSEPARATOR\fR,
-.HP 8
-\fBt\fR is the first value.
+.RS
+.TP
+.B JSON_
+is the prefix, just copied literally,
+.TP
+.B _
+is the start of escapes,
+.TP
+.B 0
+is the escaped dot (which means, it is an "unnamed" object),
+.TP
+.B _
+is the end of escapes,
+.TP
+.B w
+is the first key \fBw\fP,
+.TP
+.B =
+is the \fBSEPARATOR\fP,
+.TP
+.B t
+is the first value.
 .RE
 .PP
 Same for the 2nd line, with
-.RS 8
-.HP 8
-\fBf\fR is the 2nd key,
-.HP 8
-\fB_1_\fR is the escaped array index (starting at 1), so you know that \fBf\fR contains an array,
-.HP 8
-\fB=6\fR is \fBSEPARATOR\fR and 2nd value.
+.RS
+.TP
+.B f
+is the 2nd key,
+.TP
+.B _1_
+is the escaped array index (starting at 1), so you know that \fBf\fP contains an array,
+.TP
+.B =6
+is \fBSEPARATOR\fP and 2nd value.
+.RE
+.PP
+Same for the 3nd line,
+.RS
+.TP
+.B f_2_=42
+is the 2nd index of \fBf\fP followed by \fBSEPARATOR\fP and the 3rd value.
 .RE
 .RE
 .PP
-.B json2sh 'examplecmd\ '\ "\ "\ <<<'{"w":"t","f":[6]}'
-.RS 8
+.B json2sh 'examplecmd\ '\ "\ "\ <<<'{"w":"t","f":[6,42]}'
+.RS
 This converts the JSON input into lines with calls to function
 .BI examplecmd
 by chosing a suitable prefix (function name followed by space)
 and separator (just a blank).  The output is:
-.RS 8
+.RS
+.nf
 examplecmd _0_w t
-.br
 examplecmd _0_f_1_ 6
+examplecmd _0_f_2_ 42
+.fi
 .RE
 .RE
 .PP
 .B . <(facter -j | json2sh)
-.RS 8
-read all facts, provided by \fBfacter\fR, into the current shell for easy access.
+.RS
+read all facts, provided by \fBfacter\fP, into the current shell for easy access.
 This also works for multiline outputs of facter, like
-.br
-.B facter -j sshfp_dsa | json2sh
+.RS
+.nf
+facter -j sshfp_dsa | json2sh
+.fi
+.RE
+(FYI: String \fBsshfp_dsa\fP today is object \fBssh.dsa.fingerprints\fP)
+.RE
+.PP
+With \fBbash\fP you can do some introspection to detect all set variables:
+.RS
+.nf
+\&. <(facter -j | json2sh);
+while read -ru6 var;
+do {
+        : your code here;
+   } 6<&-;
+done 6< <(compgen -v JSON__0_ssh);
+.fi
+.RE
+.PP
+Also the output is meant to be line-by-line greppable, just use an anchor:
+.RS
+.nf
+facter -j | json2sh | grep ^JSON__0_ssh_0_rsa_0_
+.fi
+.RE
+produces the same output as
+.RS
+.nf
+facter -j ssh.rsa | json2sh
+.fi
+.RE
 .RE
