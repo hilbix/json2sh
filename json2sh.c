@@ -510,13 +510,17 @@ enum base_type
 typedef struct base *BASE;
 struct base
   {
-    BASE		next, top;
-    enum base_type	type;
-    int			done;
-    unsigned		esc, cp;
-    int			value;
-    int			buflen, pos;
-    char		*buf;
+    /* CAVEAT!  When adding new properties here
+     * be sure to initialize them in base_new()!
+     */
+    BASE		next, top;	/* initialized	*/
+    enum base_type	type;		/* initialized	*/
+    int			done;		/* initialized	*/
+    unsigned		esc, cp;	/* initialized	*/
+    int			value;		/* initialized	*/
+    int			pos;		/* initialized	*/
+    int			buflen;		/* no initialization, taken from freelist	*/
+    char		*buf;		/* no initialization, taken from freelist	*/
   };
 
 static BASE	base_freelist;
@@ -572,7 +576,8 @@ base_child(BASE p, BASE b)
       FATAL(p->type==B_UNSPEC);
       FATAL(p->next && p->next!=b);
       p->next	= b;
-      if (b->done)
+      b->top	= p->top;
+      if (b->done)	/* cannot happen, but perhaps in future	*/
         p->done	= 1;
 
       /* finish building variable name when value node follows	*/
@@ -602,11 +607,18 @@ base_new(BASE p, enum base_type type)
 
   FATAL(b->type!=B_UNSPEC);
 
+  /* CAVEAT!  When adding new properties to BASE
+   * be sure to initialize them here!
+   */
   b->next	= 0;
-  b->top	= p ? p->top : b;
+  b->top	= b;
   b->type	= type;
   b->done	= 0;
+  b->esc	= 0;
+  b->cp		= 0;
+  b->value	= 0;
   b->pos	= 0;
+  /* buflen and buf kept	*/
 
   return base_child(p, b);
 }
