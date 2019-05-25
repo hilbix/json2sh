@@ -805,12 +805,6 @@ base_escape(BASE b, int ch)
 static void
 base_add(BASE b, int ch)
 {
-  if (b->type == B_KEY)
-    {
-      base_escape(b, ch);
-      return;
-    }
-
   base_fin(b);
 
   if (ch == EOF)
@@ -878,9 +872,9 @@ base_digits(BASE b)
  * else assemble a string suitable for shell variable content.
  */
 static BASE
-get_string(BASE p, enum base_type type)
+get_string(BASE p)
 {
-  BASE	b = base(p, type);
+  BASE	b = base(p, B_VAL);
   int	c;
 
   D("");
@@ -893,6 +887,19 @@ get_string(BASE p, enum base_type type)
   return b;
 }
 
+static BASE
+get_key(BASE p)
+{
+  BASE	b = base(p, B_KEY);
+  int	c;
+
+  need("\"");
+  while ((c=uniget('"'))!=EOF)
+    base_escape(b, c);
+  base_escape(b, EOF);
+
+  return b;
+}
 
 /**********************************************************************
  * JSON datatypes
@@ -905,7 +912,7 @@ j_string(BASE b)
 {
   D("");
   FATAL(b->next);
-  get_string(b, B_VAL);
+  get_string(b);
   D(" ret");
 }
 
@@ -935,7 +942,7 @@ j_object(BASE p)
       if (base_done(b))
         need(",");
       D(" here2");
-      t	= get_string(b, B_KEY);
+      t	= get_key(b);
       need(":");
       FATAL(t->next);
       D(" here3 %d", t->done);
