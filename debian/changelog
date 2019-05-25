@@ -1,3 +1,19 @@
+json2sh (2.0) unstable; urgency=critical
+
+  * .cirrus.yml added
+  * README.md: add CI badge
+  * manual page improved
+  * Better auto versioning for reproducible builds
+  * split get_string into additional get_key
+  * move base_fin() out of base_add()
+  * move base_fin() out of base_out()
+  * CRITICAL BUGFIX: fix base initialization
+  * spacing
+  * Ignore build artifacts
+  * Add critical bug warning to README.md
+
+ -- Valentin Hilbig <webmaster@scylla-charybdis.com>  Sat, 25 May 2019 21:19:34 +0200
+
 json2sh (1.1) unstable; urgency=medium
 
   * Pass VERSION-string from debian/changelog
