@@ -805,8 +805,6 @@ base_escape(BASE b, int ch)
 static void
 base_add(BASE b, int ch)
 {
-  base_fin(b);
-
   if (ch == EOF)
     switch (b->value)
       {
@@ -844,6 +842,7 @@ base_if(BASE b, const char *chars)
       ungetc(c, stdin);
       return 0;
     }
+  base_fin(b);
   base_add(b, c);
   return 1;
 }
@@ -877,6 +876,7 @@ get_string(BASE p)
   BASE	b = base(p, B_VAL);
   int	c;
 
+  base_fin(b);
   D("");
   need("\"");
   while ((c=uniget('"'))!=EOF)
@@ -993,6 +993,7 @@ j_number(BASE p)
       base_if(b, "+-");
       base_digits(b);
     }
+  base_fin(b);
   base_add(b, EOF);
   D(" ret");
 }
