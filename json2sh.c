@@ -683,8 +683,6 @@ base_out(BASE b, const char *s, ...)
 {
   va_list	list;
 
-  base_fin(b);
-
   va_start(list, s);
   vout(s, list);
   va_end(list);
@@ -921,6 +919,7 @@ j_const(BASE b, const char *var)
 {
   D("var=%s", var);
   need(var);
+  base_fin(b);
   base_out(b, "$JSON_%s_", var);
 }
 
@@ -950,7 +949,10 @@ j_object(BASE p)
       D(" here1");
     }
   if (!base_done(b))
-    base_out(b, "$JSON_nothing_");
+    {
+      base_fin(b);
+      base_out(b, "$JSON_nothing_");
+    }
 }
 
 static void
@@ -971,7 +973,10 @@ j_array(BASE p)
       j_value(t);
     }
   if (!base_done(b))
-    base_out(b, "$JSON_empty_");
+    {
+      base_fin(b);
+      base_out(b, "$JSON_empty_");
+    }
   D(" ret");
 }
 
