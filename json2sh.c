@@ -840,7 +840,6 @@ base_add(BASE b, int ch)
   oute(ch);
 }
 
-
 static int
 base_if(BASE b, const char *chars)
 {
@@ -876,7 +875,6 @@ base_digits(BASE b)
  * JSON helpers
  *********************************************************************/
 
-
 /* if b!=NULL then assemble a string suitable for shell variable,
  * else assemble a string suitable for shell variable content.
  */
@@ -910,6 +908,7 @@ get_key(BASE p)
 
   return b;
 }
+
 
 /**********************************************************************
  * JSON datatypes
